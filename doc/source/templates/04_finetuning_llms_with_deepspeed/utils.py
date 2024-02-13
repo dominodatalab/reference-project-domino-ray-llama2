@@ -5,21 +5,37 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+import time # for OSError error logging 
 
+# TODO improve this method if possible
 def get_hash_from_bucket(
     bucket_uri: str, s3_sync_args: Optional[List[str]] = None
 ) -> str:
-
+    
     s3_sync_args = s3_sync_args or []
+    
     subprocess.run(
         ["awsv2", "s3", "cp", "--quiet"]
         + s3_sync_args
         + [os.path.join(bucket_uri, "refs", "main"), "."]
     )
+    
+    # for OSError 
+    max_retries = 3
+    retry_delay = 1  # seconds
 
-    with open(os.path.join(".", "main"), "r") as f:
-        f_hash = f.read().strip()
-
+    for _ in range(max_retries):
+        try:
+            with open(os.path.join(".", "main"), "r") as f:
+                f_hash = f.read().strip()
+            break
+        except OSError as e:
+            if "Stale file handle" in str(e):
+                time.sleep(retry_delay)
+            else:
+                raise
+#         with open(os.path.join(".", "main"), "r") as f:
+#             f_hash = f.read().strip()
     return f_hash
 
 

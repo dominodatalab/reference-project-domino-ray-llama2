@@ -80,7 +80,7 @@ def get_tokenizer(model_name, special_tokens):
 
     pretrained_path = get_pretrained_path(model_name)
     # Context for legacy=True: https://github.com/huggingface/transformers/issues/25176
-    tokenizer = AutoTokenizer.from_pretrained(pretrained_path, legacy=True)
+    tokenizer = AutoTokenizer.from_pretrained(pretrained_path, legacy=True, cache_dir="/mnt/data/reference-ray-domino-llama2") # your dataset path
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.add_tokens(special_tokens, special_tokens=True)
 
@@ -216,7 +216,7 @@ def training_function(kwargs: dict):
         block_size=config["block_size"],
         device=accelerator.device,
     )
-
+    
     pretrained_path = get_pretrained_path(model_id)
     print(f"Loading model from {pretrained_path} ...")
     s = time.time()
@@ -226,7 +226,9 @@ def training_function(kwargs: dict):
         torch_dtype=torch.bfloat16,
         # `use_cache=True` is incompatible with gradient checkpointing.
         use_cache=False,
+        cache_dir="/mnt/data/reference-ray-domino-llama2" # your dataset path
     )
+    
     print(f"Done loading model in {time.time() - s} seconds.")
     model.resize_token_embeddings(len(tokenizer))
     print("Model initialized with pretrained weights. Training starting...")
@@ -536,7 +538,7 @@ def parse_args():
     parser.add_argument(
         "--ds-config",
         type=str,
-        default="./deepspeed_configs/zero_3_llama_2_7b.json",
+        default="/mnt/code/doc/source/templates/04_finetuning_llms_with_deepspeed/deepspeed_configs/zero_3_llama_2_70b.json", # change this when you change the model size  #"./deepspeed_configs/zero_3_llama_2_7b.json",
         help="Deepspeed config json to use.",
     )
     args = parser.parse_args()
@@ -571,16 +573,27 @@ def main():
     config.update(ds_plugin=ds_plugin)
 
     os.environ["RAY_AIR_LOCAL_CACHE_DIR"] = args.output_dir
+    
+    service_host = os.environ["RAY_HEAD_SERVICE_HOST"]
+    service_port = os.environ["RAY_HEAD_SERVICE_PORT"]
 
     ray.init(
+        f"ray://{service_host}:{service_port}",
+        log_to_driver=True,
+        ignore_reinit_error=True,
         runtime_env={
             "env_vars": {
-                "HF_HOME": "/mnt/local_storage/.cache/huggingface",
+                "HF_HOME": "/mnt/data/reference-ray-domino-llama2", # your dataset path
                 "RAY_AIR_LOCAL_CACHE_DIR": os.environ["RAY_AIR_LOCAL_CACHE_DIR"],
             },
             "working_dir": ".",
+#             'excludes': ['/mnt/code/doc/data/MNIST/raw/train-images-idx3-ubyte',
+#                         '/mnt/code/.git/objects/pack/pack-d79ea7ec7e4f1236681b900945ece5c904fb4310.pack']
         }
     )
+    
+    cluster_resources = ray.cluster_resources()
+    print(cluster_resources)
 
     # Read data
     train_ds = ray.data.read_json(args.train_path)
@@ -593,10 +606,11 @@ def main():
     with open(args.special_token_path, "r") as json_file:
         special_tokens = json.load(json_file)["tokens"]
 
-    artifact_storage = os.environ.get("ANYSCALE_ARTIFACT_STORAGE", "artifact_storage")
+    #artifact_storage = os.environ.get("ANYSCALE_ARTIFACT_STORAGE", "artifact_storage")
     user_name = re.sub(r"\s+", "__", os.environ.get("ANYSCALE_USERNAME", "user"))
     storage_path = (
-        f"{artifact_storage}/{user_name}/ft_llms_with_deepspeed/{args.model_name}"
+        f"/mnt/data/reference-ray-domino-llama2" # your dataset path
+        #f"{artifact_storage}/{user_name}/ft_llms_with_deepspeed/{args.model_name}"
     )
 
     trainer = TorchTrainer(
@@ -617,7 +631,7 @@ def main():
         scaling_config=train.ScalingConfig(
             num_workers=args.num_devices,
             use_gpu=True,
-            resources_per_worker={"GPU": 1},
+            resources_per_worker={"GPU": 1}, # 8 if we use gpu-training-a10 hwt, 1 if we use gpu-testing
         ),
         datasets={"train": train_ds, "valid": valid_ds},
         dataset_config=ray.train.DataConfig(datasets_to_split=["train", "valid"]),

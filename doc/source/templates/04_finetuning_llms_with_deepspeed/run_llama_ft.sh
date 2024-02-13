@@ -6,7 +6,7 @@ check_and_create_dataset() {
     local data_dir=$1
     if [ ! -d "${data_dir}" ]; then
         echo "Data directory not found. Creating dataset..."
-        if ! python create_dataset.py; then
+        if ! python3 create_dataset.py; then
             echo "Failed to create dataset. Exiting..."
             exit 1
         fi
@@ -25,7 +25,7 @@ fine_tune() {
     local token_path=$8
     local params=("${@:9}")
     echo "Fine-tuning model..."
-    if ! python finetune_hf_llm.py \
+    if ! python3 finetune_hf_llm.py \
         -bs "${bs}" \
         -nd "${nd}" \
         --model_name "${model_name}" \
@@ -43,8 +43,8 @@ fine_tune() {
 }
 
 # Variables for cleaner handling
-BASE_DIR="/mnt/local_storage"
-DATA_DIR="./data"
+BASE_DIR="/mnt/data/reference-ray-domino-llama2" # your dataset path
+DATA_DIR="./data" #"./data"
 TRAIN_PATH="${DATA_DIR}/train.jsonl"
 TEST_PATH="${DATA_DIR}/test.jsonl"
 TOKEN_PATH="${DATA_DIR}/tokens.json"
@@ -66,15 +66,15 @@ done
 case $SIZE in
 "7b")
     BS=16
-    ND=16
+    ND=1 #16 #6 #16 node count 1 with gpu-training-a10 hwt was successful with 7b
     ;;
 "13b")
     BS=16
-    ND=16
+    ND=16 #16 node count 16 works for 13b with gpu-testing hwt and 16 workers 
     ;;
 "70b")
     BS=8
-    ND=32
+    ND=32 #16 #32
     ;;
 *)
     echo "Invalid size: ${SIZE}"
