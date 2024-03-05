@@ -54,7 +54,7 @@ We recommend using 6, 16, and 32 workers for Llama2 7b, 13b, and 70b respectivel
 
 The following steps are from the official Ray project for your reference. We have tested fine-tuning and made changes to the code so that it runs seamlessly on Domino. We also provide an inference script `Inference.ipynb` to try out your model from within a Domino workspace. 
 
-# Finetuning Llama-2 series models with Deepspeed, Accelerate, and Ray Train TorchTrainer
+# [Ray Project] Finetuning Llama-2 series models with Deepspeed, Accelerate, and Ray Train TorchTrainer
 | Template Specification | Description |
 | ---------------------- | ----------- |
 | Summary | This template, demonstrates how to perform full parameter fine-tuning for Llama-2 series models (7B, 13B, and 70B) using TorchTrainer with the DeepSpeed ZeRO-3 strategy. |
