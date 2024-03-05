@@ -1,3 +1,59 @@
+# [Domino] Set up instructions 
+
+## Environment requirements
+
+Make sure that you have the right workspace and cluster environments. The workspace environment comes with the project template. Here is what we used for the cluster environment - 
+
+Base image `anyscale/ray:2.7.0-py39-cu118`
+
+Dockerfile instructions
+
+```
+USER root
+
+RUN \
+  groupadd -g 12574 ubuntu && \
+  useradd -u 12574 -g 12574 -m -N -s /bin/bash ubuntu
+
+RUN pip install accelerate \
+				aim \
+				datasets \
+				deepspeed \
+				evaluate \
+				ipywidgets \
+				matplotlib \
+				mlflow \
+				numpy \
+				pandas \
+				peft \
+				scipy \
+                tblib \
+				transformers==4.31.0 \
+				sentencepiece \ 
+                filelock==3.12.2 \ 
+				tqdm==4.64.1
+
+RUN pip install -U --force-reinstall torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
+RUN git clone https://github.com/timdettmers/bitsandbytes.git
+WORKDIR bitsandbytes
+
+RUN git checkout 0.42.0
+
+# CUDA_VERSIONS in {110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 120}
+# make argument in {cuda110, cuda11x, cuda12x}
+# if you do not know what CUDA you have, try looking at the output of: python -m bitsandbytes
+RUN CUDA_VERSION=118 make cuda11x
+RUN python setup.py install --force
+
+RUN sudo chmod 777 -R /home/ray
+```
+
+## Hardware Tier Requirements 
+
+We recommend using 6, 16, and 32 workers for Llama2 7b, 13b, and 70b respectively. Set up a HWT using `g5.4xlarge` instances. We tested this project by using the same HWT for workspace, and compute cluster head and worker tiers. You do not need A100s to make it work! You can also try out the recommendations from the official Ray project as mentioned below. 
+
+The following steps are from the official Ray project for your reference. We have tested fine-tuning and made changes to the code so that it runs seamlessly on Domino. We also provide an inference script `Inference.ipynb` to try out your model from within a Domino workspace. 
+
 # Finetuning Llama-2 series models with Deepspeed, Accelerate, and Ray Train TorchTrainer
 | Template Specification | Description |
 | ---------------------- | ----------- |
