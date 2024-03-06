@@ -1,0 +1,6 @@
+{
+  "title": "Ray 2.7.0 DeepSpeed Llama2 Workspace and Cluster Base Environment",
+  "id": "Ray 2.7.0 DeepSpeed Llama2 Workspace and Cluster Base Environment",
+  "environmentBaseImage": "anyscale/ray:2.7.0-py39-cu118",
+  "description": "This environment can be used as a base environment."
+}

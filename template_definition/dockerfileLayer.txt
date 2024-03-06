@@ -1,0 +1,43 @@
+# System-level dependency injection runs as root
+USER root:root
+
+# Validate base image pre-requisites
+# Complete requirements can be found at
+# https://docs.dominodatalab.com/en/latest/user_guide/a00d1b/automatic-adaptation-of-custom-images/#_pre_requisites_for_automatic_custom_image_compatibility_with_domino
+RUN /opt/domino/bin/pre-check.sh
+
+# Configure /opt/domino to prepare for Domino executions
+RUN /opt/domino/bin/init.sh
+
+# Validate the environment
+RUN /opt/domino/bin/validate.sh
+
+RUN pip install accelerate \
+				aim \
+				datasets \
+				deepspeed \
+				evaluate \
+				ipywidgets \
+				matplotlib \
+				mlflow \
+				numpy \
+				pandas \
+				peft \
+				scipy \
+                tblib \
+                transformers==4.31.0 \
+                sentencepiece \ 
+                filelock==3.12.2 \ 
+				tqdm==4.64.1
+
+RUN pip install -U --force-reinstall torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
+RUN git clone https://github.com/timdettmers/bitsandbytes.git
+WORKDIR bitsandbytes
+
+RUN git checkout 0.42.0
+
+# CUDA_VERSIONS in {110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 120}
+# make argument in {cuda110, cuda11x, cuda12x}
+# if you do not know what CUDA you have, try looking at the output of: python -m bitsandbytes
+RUN CUDA_VERSION=118 make cuda11x
+RUN python setup.py install --force

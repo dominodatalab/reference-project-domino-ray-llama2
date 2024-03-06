@@ -1,0 +1,77 @@
+{
+  "title": "Fine-tuning Llama2 7b, 13b, and 70b on Domino",
+  "id": "Fine-tuning Llama2 7b, 13b, and 70b on Domino",
+  "description": "This template demonstrates how to fine-tune Llama2 7b, 13b and 70b using Ray and DeepSpeed on Domino. It is a fork of the official Ray project.",
+  "categories": [
+    "Fine Tuning",
+    "LLM",
+    "Llama 2",
+    "Large models",
+    "Ray",
+    "DeepSpeed"
+  ],
+  "mainRepository": {
+    "uri": "https://github.com/dominodatalab/reference-project-domino-ray-llama2",
+    "ref": {
+      "type": "commitId",
+      "value": "f447c6d9d66fb22054e0000c5149c07eac05d2bd"
+    },
+    "serviceProvider": "github"
+  },
+  "owner": {
+    "name": "Domino",
+    "link": "https://domino.ai"
+  },
+  "models": [
+    {
+      "name": "Llama2 7b",
+      "link": "meta-llama/Llama-2-7b-hf",
+      "source": null
+    },
+    {
+      "name": "Llama2 13b",
+      "link": "meta-llama/Llama-2-13b-hf",
+      "source": null
+    },
+    {
+      "name": "Llama2 70b",
+      "link": "meta-llama/Llama-2-70b-hf",
+      "source": null
+    }
+  ],
+  "license": {
+    "name": "Apache 2.0",
+    "link": "https://github.com/dominodatalab/reference-project-domino-ray-llama2?tab=Apache-2.0-1-ov-file#readme"
+  },
+  "data": {
+    "name": "This template uses the Grade School Math 8k (GSM8K) dataset. Depending on the dataset you want to finetune on, the tokenization and dataset pre-processing will likely need to be adjusted.",
+    "link": "https://github.com/dominodatalab/reference-project-domino-ray-llama2/tree/releases/2.7.0/doc/source/templates/04_finetuning_llms_with_deepspeed#creating-the-dataset"
+  },
+  "dataFormat": "jsonl",
+  "recommended": false,
+  "prerequisites": [
+    {
+      "value": "Before using this project, please ensure that you have the correct workspace and cluster environments, and hardware tier. Also, follow the linked instructions",
+      "link": "https://github.com/dominodatalab/reference-project-domino-ray-llama2/tree/releases/2.7.0/doc/source/templates/04_finetuning_llms_with_deepspeed#domino-set-up-instructions"
+    }
+  ],
+  "goals": null,
+  "hardwareTier": {
+    "value": "6, 16, and 32 A10 GPUs (preferably g5.4xlarge) are recommended for fine-tuning 7b, 13b, and 70b respectively. Running the inference notebook might require more resources (for example, 16 workers for 7b).",
+    "link": null
+  },
+  "environmentKey": null,
+  "environmentReqs": {
+    "value": "This template needs the Ray 2.7.0 DeepSpeed Llama2 Workspace and Cluster Environment to run. See the README.md for Environment details and follow the instructions mentioned on how to run the project.",
+    "link": "https://github.com/dominodatalab/reference-project-domino-ray-llama2/tree/releases/2.7.0/doc/source/templates/04_finetuning_llms_with_deepspeed#domino-set-up-instructions"
+  },
+  "importedRepositories": null,
+  "supportedDominoVersions": [
+    "5.10.0"
+  ],
+  "projectSettings": null,
+  "test": {
+    "test_command": "template_tests/basic_checks.py",
+    "hardware_tier_id": "gpu-testing-clone"
+  }
+}
