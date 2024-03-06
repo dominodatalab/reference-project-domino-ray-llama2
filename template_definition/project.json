@@ -1,6 +1,5 @@
 {
   "title": "Fine-tuning Llama2 7b, 13b, and 70b on Domino",
-  "id": "Fine-tuning Llama2 7b, 13b, and 70b on Domino",
   "description": "This template demonstrates how to fine-tune Llama2 7b, 13b and 70b using Ray and DeepSpeed on Domino. It is a fork of the official Ray project.",
   "categories": [
     "Fine Tuning",
