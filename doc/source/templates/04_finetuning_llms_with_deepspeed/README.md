@@ -50,7 +50,7 @@ RUN sudo chmod 777 -R /home/ray
 
 ## Hardware Tier Requirements 
 
-We recommend using 6, 16, and 32 workers for Llama2 7b, 13b, and 70b respectively for fine-tuning in case you want to use resources judiciously. You can also increase the number of workers to 16 for 7b to make the inference script work. Set up a HWT using `g5.4xlarge` instances. We tested this project by using the same HWT for workspace, and compute cluster head and worker tiers. You do not need A100s to make it work! You can also try out the recommendations from the official Ray project as mentioned below. 
+You do not need A100s to make fine-tuning with large models work! We recommend setting up a HWT using `g5.4xlarge` instances. Do not use the autoscaler feature while launching a workspace. We suggest using 6, 16, and 32 workers for Llama2 7b, 13b, and 70b respectively for fine-tuning in case you want to use resources judiciously. You can also increase the number of workers to say 16 for 7b to work with the inference script work. We tested this project by using the same hardware for the workspace, and the compute cluster head and worker tiers. Note that if you need to increase the limit for number of workers, you can set the `com.cerebro.domino.computegrid.userExecutionsQuota.maximumExecutionsPerUser` central config record with a higher value for user execution. You can also try out the recommendations from the official Ray project as mentioned below.
 
 The following steps are from the official Ray project for your reference. We have tested fine-tuning and made changes to the code so that it runs seamlessly on Domino. We also provide an inference script `Inference.ipynb` to try out your model from within a Domino workspace. 
 
