@@ -1,6 +1,6 @@
 # [Domino] Set up instructions 
 
-## Environment requirements
+## Environment Requirements
 
 Make sure that you have the right workspace and cluster environments. The workspace environment comes with the project template. Here is what we used for the cluster environment - 
 
@@ -48,7 +48,7 @@ RUN python setup.py install --force
 RUN sudo chmod 777 -R /home/ray
 ```
 
-## Hardware Tier Requirements 
+## Hardware Requirements 
 
 You do not need A100s to make fine-tuning with large models work! We recommend setting up a HWT using `g5.4xlarge` instances. Do not use the autoscaler feature while launching a workspace. We suggest using 6, 16, and 32 workers for Llama2 7b, 13b, and 70b respectively for fine-tuning in case you want to use resources judiciously. You can also increase the number of workers to say 16 for 7b to work with the inference script work. We tested this project by using the same hardware for the workspace, and the compute cluster head and worker tiers. Note that if you need to increase the limit for number of workers, you can set the `com.cerebro.domino.computegrid.userExecutionsQuota.maximumExecutionsPerUser` central config record with a higher value for user execution. You can also try out the recommendations from the official Ray project as mentioned below.
 
