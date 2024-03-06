@@ -50,7 +50,7 @@
   "recommended": false,
   "prerequisites": [
     {
-      "value": "Before using this project, please ensure that you have the correct workspace and cluster environments, and hardware tier. Also, follow the linked instructions",
+      "value": "Before using this project, please ensure that you have the correct workspace and cluster environments, and hardware tier. Also, follow the linked instructions to run the project.",
       "link": "https://github.com/dominodatalab/reference-project-domino-ray-llama2/tree/releases/2.7.0/doc/source/templates/04_finetuning_llms_with_deepspeed#domino-set-up-instructions"
     }
   ],
@@ -61,7 +61,7 @@
   },
   "environmentKey": null,
   "environmentReqs": {
-    "value": "This template needs the Ray 2.7.0 DeepSpeed Llama2 Workspace and Cluster Environment to run. See the README.md for Environment details and follow the instructions mentioned on how to run the project.",
+    "value": "This template needs appropriate Ray 2.7.0 DeepSpeed Llama2 workspace and cluster environments to run. See the README.md for Environment details and follow the instructions on how to run the project.",
     "link": "https://github.com/dominodatalab/reference-project-domino-ray-llama2/tree/releases/2.7.0/doc/source/templates/04_finetuning_llms_with_deepspeed#domino-set-up-instructions"
   },
   "importedRepositories": null,
