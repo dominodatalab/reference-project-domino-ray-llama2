@@ -16,22 +16,22 @@ RUN \
   useradd -u 12574 -g 12574 -m -N -s /bin/bash ubuntu
 
 RUN pip install accelerate \
-				aim \
-				datasets \
-				deepspeed \
-				evaluate \
-				ipywidgets \
-				matplotlib \
-				mlflow \
-				numpy \
-				pandas \
-				peft \
-				scipy \
-                                tblib \
-				transformers==4.31.0 \
-				sentencepiece \ 
-                                filelock==3.12.2 \ 
-				tqdm==4.64.1
+                aim \
+                datasets \
+                deepspeed \
+                evaluate \
+                ipywidgets \
+                matplotlib \
+                mlflow \
+                numpy \
+                pandas \
+                peft \
+                scipy \
+                tblib \
+                transformers==4.31.0 \
+                sentencepiece \ 
+                filelock==3.12.2 \ 
+                tqdm==4.64.1
 
 RUN pip install -U --force-reinstall torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118
 RUN git clone https://github.com/timdettmers/bitsandbytes.git
