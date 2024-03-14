@@ -88,7 +88,7 @@ on the Pod Type
 | Type of Pod| HW Tier Instance Type | CPU | Memory | GPU | GPU Memory (Based on GPU Chosen)|
 |-------------|-----|---------------|--------------|------------|------------|
 | Workspace  |  m5.xlarge    | 4    | 15     | 0      | 0      |
-| Ray Head | m5.xlarge    | 4    | 15     | 0      | 0      |
+| Ray Head | r6g.2xlarge   | 4    | 55    | 0      | 0      |
 | Ray Worker | g5.4xlarge  | 6    | 55     | 1 x A10G     | 24 GB      |
 
 
@@ -111,12 +111,12 @@ The following steps are from the official Ray project for your reference. We hav
 
 ## Getting Started
 
-For 7B, set up a cluster on AWS with the following settings:
+For 7B, set up a Ray Cluster with the following settings:
 
-|            | num | instance type | GPU per node | GPU Memory | CPU Memory |
-|------------|-----|---------------|--------------|------------|------------|
-| Head node  | 1   | m5.xlarge   | -     | -     | -     |
-| Worker node| 6  | g5.4xlarge    | 1 x A10G     | 24 GB      | 55 GB      |
+|  Node Type | Num | 
+|------------|-----|
+| Head node  | 1   |
+| Worker node| 6  | 
 
 And launch the following script:
 
@@ -128,10 +128,10 @@ The flag `--as-test` is for demo / testing purposes as it runs through only one 
 
 Similarly for 13B you need a different compute config. 
 
-|            | num | instance type | GPU per node | GPU Memory | CPU Memory |
-|------------|-----|---------------|--------------|------------|------------|
-| Head node  | 1   | m5.xlarge   | -     | -     | -     |
-| Worker node| 16  | g5.12xlarge    | 1 x A10G     | 24 GB      | 55 GB      |
+|  Node Type | Num | 
+|------------|-----|
+| Head node  | 1   |
+| Worker node| 16  | 
 
 ```
 ./run_llama_ft.sh --size=13b [--as-test]
@@ -139,10 +139,11 @@ Similarly for 13B you need a different compute config.
 
 Similarly for 70B you need a different compute config. 
 
-|            | num | instance type | GPU per node | GPU Memory | CPU Memory |
-|------------|-----|---------------|--------------|------------|------------|
-| Head node  | 1   | m5.xlarge   | -     | -     | -     |
-| Worker node| 32  | g5.12xlarge    | 1 x A10G     | 24 GB      | 55 GB      |
+|  Node Type | Num | 
+|------------|-----|
+| Head node  | 1   |
+| Worker node| 32  | 
+
 
 ```
 ./run_llama_ft.sh --size=13b [--as-test]
