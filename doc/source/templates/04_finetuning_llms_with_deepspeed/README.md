@@ -50,7 +50,54 @@ RUN sudo chmod 777 -R /home/ray
 
 ## Hardware Requirements 
 
-You do not need A100s to make fine-tuning with large models work! We recommend setting up a HWT using `g5.4xlarge` instances. Do not use the autoscaler feature while launching a workspace. We suggest using 6, 16, and 32 workers for Llama2 7b, 13b, and 70b respectively for fine-tuning in case you want to use resources judiciously. You can also increase the number of workers to say 16 for 7b to work with the inference script work. We tested this project by using the same hardware for the workspace, and the compute cluster head and worker tiers. Note that if you need to increase the limit for number of workers, you can set the `com.cerebro.domino.computegrid.userExecutionsQuota.maximumExecutionsPerUser` central config record with a higher value for user execution. You can also try out the recommendations from the official Ray project as mentioned below.
+You do not need A100s to make fine-tuning with large models work! We recommend setting up a HWT using `g5.4xlarge` instances. 
+
+**Do not use the autoscaler feature while launching a workspace**. Instead start your workspaces with the a Ray cluster with the required number of nodes. Our recommendation for this repo (for testing purposes) we suggest the followig (to ensure a judicious and cost optimal way to use utilize GPU)
+| Llama2 Model| No of Workers | instance type | GPU per node | GPU Memory | CPU Memory |
+|-------------|-----|---------------|--------------|------------|------------|
+| 7B  | 6   | g5.4xlarge    | 1 x A10G     | 24 GB      | 64 GB      |
+| 13B | 16  | g5.4xlarge    | 1 x A10G     | 24 GB      | 64 GB      |
+| 70B | 32  | g5.4xlarge    | 1 x A10G     | 24 GB      | 64 GB      |
+
+The defaults are configured in the script `run_llama_ft.sh`  in the section below (BS==BatchSize and ND=No of Workers)
+```
+# Batch size and node count
+case $SIZE in
+"7b")
+    BS=16
+    ND=6 #16 #6 #16 node count 1 with gpu-training-a10 hwt was successful with 7b
+    ;;
+"13b")
+    BS=16
+    ND=16 #16 node count 16 works for 13b with gpu-testing hwt and 16 workers 
+    ;;
+"70b")
+    BS=8
+    ND=32 #16 #32
+    ;;
+*)
+    echo "Invalid size: ${SIZE}"
+    exit 1
+    ;;
+esac
+```
+
+Change the values accordingly to increase/decrease the Batch Size or No of Workers. Also for this test we use the following Hardware Tiers based
+on the Pod Type
+
+| Type of Pod| HW Tier Instance Type | CPU | Memory | GPU | GPU Memory (Based on GPU Chosen)|
+|-------------|-----|---------------|--------------|------------|------------|
+| Workspace  |  m5.xlarge    | 4    | 15     | 0      | 0      |
+| Ray Head | m5.xlarge    | 4    | 15     | 0      | 0      |
+| Ray Worker | g5.4xlarge  | 6    | 55     | 1 x A10G     | 24 GB      |
+
+
+> Note: Domino defines the maximum number of workloads a user can start using the central config parameter
+> `com.cerebro.domino.computegrid.userExecutionsQuota.maximumExecutionsPerUser`. By default this is 25. This parameter applies to all interactive
+> workloads started by the user which means, workspaces and any cluster pods attached to the workspaces (read that a the head node and the number 
+> of workers). For a single workspace, it means you can start a ray cluster with 23 workers assuming you have no other workspaces running. If you
+> have 5 standalone workspaces running, and start a workspace with an attached Ray cluster, that cluster can have a maximum of 18 workers.
+> Ask your admin to increase this limit if you want to start more workloads. 
 
 The following steps are from the official Ray project for your reference. We have tested fine-tuning and made changes to the code so that it runs seamlessly on Domino. We also provide an inference script `Inference.ipynb` to try out your model from within a Domino workspace. 
 
@@ -59,7 +106,7 @@ The following steps are from the official Ray project for your reference. We hav
 | ---------------------- | ----------- |
 | Summary | This template, demonstrates how to perform full parameter fine-tuning for Llama-2 series models (7B, 13B, and 70B) using TorchTrainer with the DeepSpeed ZeRO-3 strategy. |
 | Time to Run | ~14 min. for 7B for 1 epoch on 3.5M tokens. ~26 min for 13B for 1 epoch.  |
-| Minimum Compute Requirements | 16xg5.4xlarge for worker nodes for 7B model, 4xg5.12xlarge nodes for 13B model, and 4xg5.48xlarge (or 2xp4de.24xlarge) nodes for 70B|
+| Minimum Compute Requirements | 6xg5.4xlarge for worker nodes for 7B model, 16xg5.4xlarge nodes for 13B model, and 32xg5.4xlarge (or 2xp4de.24xlarge) nodes for 70B|
 | Cluster Environment | This template uses a docker image built on top of the latest Anyscale-provided Ray image using Python 3.9: [`anyscale/ray:latest-py39-cu118`](https://docs.anyscale.com/reference/base-images/overview). |
 
 ## Getting Started
@@ -69,7 +116,7 @@ For 7B, set up a cluster on AWS with the following settings:
 |            | num | instance type | GPU per node | GPU Memory | CPU Memory |
 |------------|-----|---------------|--------------|------------|------------|
 | Head node  | 1   | m5.xlarge   | -     | -     | -     |
-| Worker node| 16  | g5.4xlarge    | 1 x A10G     | 24 GB      | 64 GB      |
+| Worker node| 6  | g5.4xlarge    | 1 x A10G     | 24 GB      | 55 GB      |
 
 And launch the following script:
 
@@ -84,7 +131,18 @@ Similarly for 13B you need a different compute config.
 |            | num | instance type | GPU per node | GPU Memory | CPU Memory |
 |------------|-----|---------------|--------------|------------|------------|
 | Head node  | 1   | m5.xlarge   | -     | -     | -     |
-| Worker node| 4  | g5.12xlarge    | 4 x A10G     | 24 GB      | 64 GB      |
+| Worker node| 16  | g5.12xlarge    | 1 x A10G     | 24 GB      | 55 GB      |
+
+```
+./run_llama_ft.sh --size=13b [--as-test]
+```
+
+Similarly for 70B you need a different compute config. 
+
+|            | num | instance type | GPU per node | GPU Memory | CPU Memory |
+|------------|-----|---------------|--------------|------------|------------|
+| Head node  | 1   | m5.xlarge   | -     | -     | -     |
+| Worker node| 32  | g5.12xlarge    | 1 x A10G     | 24 GB      | 55 GB      |
 
 ```
 ./run_llama_ft.sh --size=13b [--as-test]
