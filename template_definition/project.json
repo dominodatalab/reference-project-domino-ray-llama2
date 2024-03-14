@@ -71,6 +71,6 @@
   "projectSettings": null,
   "test": {
     "test_command": "template_tests/basic_checks.py",
-    "hardware_tier_id": "gpu-testing-clone"
+    "hardware_tier_id": "gpu-k8s"
   }
 }
