@@ -42,6 +42,7 @@ from utils import (
     get_download_path,
 )
 
+DATASET_NAME=os.environ["DOMINO_PROJECT_NAME"]
 
 OPTIM_BETAS = (0.9, 0.999)
 OPTIM_EPS = 1e-8
@@ -50,7 +51,7 @@ OPTIM_WEIGHT_DECAY = 0.0
 
 def get_number_of_params(model: nn.Module):
     state_dict = model.state_dict()
-    return sum(p.numel() for p in state_dict.values())
+    return sum(p.numel() for p in state_dict.values/())
 
 
 def collate_fn(batch, tokenizer, block_size, device):
@@ -80,7 +81,7 @@ def get_tokenizer(model_name, special_tokens):
 
     pretrained_path = get_pretrained_path(model_name)
     # Context for legacy=True: https://github.com/huggingface/transformers/issues/25176
-    tokenizer = AutoTokenizer.from_pretrained(pretrained_path, legacy=True, cache_dir="/mnt/data/reference-ray-domino-llama2") # your dataset path
+    tokenizer = AutoTokenizer.from_pretrained(pretrained_path, legacy=True, cache_dir=f"/mnt/data/{DATASET_NAME}") # your dataset path
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.add_tokens(special_tokens, special_tokens=True)
 
@@ -226,7 +227,7 @@ def training_function(kwargs: dict):
         torch_dtype=torch.bfloat16,
         # `use_cache=True` is incompatible with gradient checkpointing.
         use_cache=False,
-        cache_dir="/mnt/data/reference-ray-domino-llama2" # your dataset path
+        cache_dir=f"/mnt/data/{DATASET_NAME}" # your dataset path
     )
     
     print(f"Done loading model in {time.time() - s} seconds.")
@@ -547,7 +548,6 @@ def parse_args():
 
 
 def main():
-
     args = parse_args()
 
     if not args.output_dir:
@@ -583,7 +583,7 @@ def main():
         ignore_reinit_error=True,
         runtime_env={
             "env_vars": {
-                "HF_HOME": "/mnt/data/reference-ray-domino-llama2", # your dataset path
+                "HF_HOME": f"/mnt/data/{DATASET_NAME}", # your dataset path
                 "RAY_AIR_LOCAL_CACHE_DIR": os.environ["RAY_AIR_LOCAL_CACHE_DIR"],
             },
             "working_dir": ".",
@@ -609,7 +609,7 @@ def main():
     #artifact_storage = os.environ.get("ANYSCALE_ARTIFACT_STORAGE", "artifact_storage")
     user_name = re.sub(r"\s+", "__", os.environ.get("ANYSCALE_USERNAME", "user"))
     storage_path = (
-        f"/mnt/data/reference-ray-domino-llama2" # your dataset path
+        f"/mnt/data/{DATASET_NAME}" # your dataset path
         #f"{artifact_storage}/{user_name}/ft_llms_with_deepspeed/{args.model_name}"
     )
 
