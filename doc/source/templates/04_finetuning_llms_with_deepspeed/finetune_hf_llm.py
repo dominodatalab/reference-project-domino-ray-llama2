@@ -51,7 +51,7 @@ OPTIM_WEIGHT_DECAY = 0.0
 
 def get_number_of_params(model: nn.Module):
     state_dict = model.state_dict()
-    return sum(p.numel() for p in state_dict.values/())
+    return sum(p.numel() for p in state_dict.values())
 
 
 def collate_fn(batch, tokenizer, block_size, device):
