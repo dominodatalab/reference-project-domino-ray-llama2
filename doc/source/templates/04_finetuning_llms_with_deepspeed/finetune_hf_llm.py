@@ -539,7 +539,7 @@ def parse_args():
     parser.add_argument(
         "--ds-config",
         type=str,
-        default="/mnt/code/doc/source/templates/04_finetuning_llms_with_deepspeed/deepspeed_configs/zero_3_llama_2_70b.json", # change this when you change the model size  #"./deepspeed_configs/zero_3_llama_2_7b.json",
+        default="/mnt/code/doc/source/templates/04_finetuning_llms_with_deepspeed/deepspeed_configs/zero_3_llama_2_7b.json", # change this when you change the model size (can be provided as a parameter) 
         help="Deepspeed config json to use.",
     )
     args = parser.parse_args()
