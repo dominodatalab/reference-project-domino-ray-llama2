@@ -66,15 +66,15 @@ done
 case $SIZE in
 "7b")
     BS=16
-    ND=6 #16 #6 #16 node count 1 with gpu-training-a10 hwt was successful with 7b
+    ND=6 # can be changed depending on the resources you require/availibility
     ;;
 "13b")
     BS=16
-    ND=16 #16 node count 16 works for 13b with gpu-testing hwt and 16 workers 
+    ND=16 # can be changed depending on the resources you require/availibility
     ;;
 "70b")
     BS=8
-    ND=32 #16 #32
+    ND=32 # can be changed depending on the resources you require/availibility
     ;;
 *)
     echo "Invalid size: ${SIZE}"
