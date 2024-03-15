@@ -2,7 +2,7 @@
 
 ## Environment Requirements
 
-Make sure that you have the right workspace and cluster environments. The workspace environment comes with the project template. Here is what we used for the cluster environment - 
+Make sure that you have the right workspace and cluster environments. The workspace environment details are provided with the Domino AI Hub project template. Here is what we used for the cluster environment - 
 
 Base image `anyscale/ray:2.7.0-py39-cu118`
 
@@ -50,26 +50,73 @@ RUN sudo chmod 777 -R /home/ray
 
 ## Hardware Requirements 
 
-You do not need A100s to make fine-tuning with large models work! We recommend setting up a HWT using `g5.4xlarge` instances. Do not use the autoscaler feature while launching a workspace. We suggest using 6, 16, and 32 workers for Llama2 7b, 13b, and 70b respectively for fine-tuning in case you want to use resources judiciously. You can also increase the number of workers to say 16 for 7b to work with the inference script work. We tested this project by using the same hardware for the workspace, and the compute cluster head and worker tiers. Note that if you need to increase the limit for number of workers, you can set the `com.cerebro.domino.computegrid.userExecutionsQuota.maximumExecutionsPerUser` central config record with a higher value for user execution. You can also try out the recommendations from the official Ray project as mentioned below.
+You do not need A100s to make fine-tuning with large models work! We recommend setting up a HWT using `g5.4xlarge` instances. 
 
-The following steps are from the official Ray project for your reference. We have tested fine-tuning and made changes to the code so that it runs seamlessly on Domino. We also provide an inference script `Inference.ipynb` to try out your model from within a Domino workspace. 
+**Do not use the autoscaler feature while launching a workspace**. Instead, start your workspaces with a Ray cluster with the required number of nodes. For testing purposes, we  recommend the following minimal requirements (to ensure a judicious and cost optimal way to use utilize GPU):
+| Llama2 Model| No of Workers | instance type | GPU per node | GPU Memory | CPU Memory |
+|-------------|-----|---------------|--------------|------------|------------|
+| 7B  | 6   | g5.4xlarge    | 1 x A10G     | 24 GB      | 64 GB      |
+| 13B | 16  | g5.4xlarge    | 1 x A10G     | 24 GB      | 64 GB      |
+| 70B | 32  | g5.4xlarge    | 1 x A10G     | 24 GB      | 64 GB      |
+
+The defaults are configured in the script `run_llama_ft.sh`  in the section below (BS==BatchSize and ND=No of Workers)
+```
+# Batch size and node count
+case $SIZE in
+"7b")
+    BS=16
+    ND=6 # change the number of devices/workers if you need more resources 
+    ;;
+"13b")
+    BS=16
+    ND=16 # change the number of devices/workers if you need more resources 
+    ;;
+"70b")
+    BS=8
+    ND=32 # change the number of devices/workers if you need more resources
+    ;;
+*)
+    echo "Invalid size: ${SIZE}"
+    exit 1
+    ;;
+esac
+```
+
+Change the values accordingly to increase/decrease the Batch Size or No of Workers/Devices. Also, for this test we used the same Hardware Tier for all pod types as shown below. You can change this upon your discretion depending on your resource availability.
+
+| Type of Pod| HW Tier Instance Type | CPU | Memory | GPU | GPU Memory (Based on GPU Chosen)|
+|-------------|-----|---------------|--------------|------------|------------|
+| Workspace | g5.4xlarge  | 6    | 55     | 1 x A10G     | 24 GB      |
+| Ray Head | g5.4xlarge  | 6    | 55     | 1 x A10G     | 24 GB      |
+| Ray Worker | g5.4xlarge  | 6    | 55     | 1 x A10G     | 24 GB      |
+
+We also allocated enough storage space per worker (for example, 100 GiB). Note that you might also have to increase the Workspace volume size under Project Settings (for example, 200 GiB). 
+
+> Note: Domino defines the maximum number of workloads a user can start using the central config parameter
+> `com.cerebro.domino.computegrid.userExecutionsQuota.maximumExecutionsPerUser`. By default, this is set to 25. This parameter applies to all interactive
+> workloads started by the user which means, workspaces and any cluster pods attached to the workspaces (head and worker nodes included). 
+> For a single workspace, it means you can start a ray cluster with 23 workers assuming you have no other workspaces running. If you
+> have 5 standalone workspaces running, and start a workspace with an attached Ray cluster, that cluster can have a maximum of 18 workers.
+> Ask your admin to increase this limit if you want to start more workloads (for example, in case you are working with Llama2 70b). 
+
+The following steps are from the official Ray project for your reference. You can also refer to the official Ray repository for more context. We have tested fine-tuning and made changes to the code so that it runs seamlessly on Domino. We also provide an inference script `Inference.ipynb` to try out your model from within a Domino workspace. 
 
 # [Ray Project] Finetuning Llama-2 series models with Deepspeed, Accelerate, and Ray Train TorchTrainer
 | Template Specification | Description |
 | ---------------------- | ----------- |
-| Summary | This template, demonstrates how to perform full parameter fine-tuning for Llama-2 series models (7B, 13B, and 70B) using TorchTrainer with the DeepSpeed ZeRO-3 strategy. |
-| Time to Run | ~14 min. for 7B for 1 epoch on 3.5M tokens. ~26 min for 13B for 1 epoch.  |
-| Minimum Compute Requirements | 16xg5.4xlarge for worker nodes for 7B model, 4xg5.12xlarge nodes for 13B model, and 4xg5.48xlarge (or 2xp4de.24xlarge) nodes for 70B|
+| Summary | This template demonstrates how to perform full parameter fine-tuning for Llama-2 series models (7B, 13B, and 70B) using TorchTrainer with the DeepSpeed ZeRO-3 strategy. |
+| Time to Run | ~14 min. for 7B for 1 epoch on 3.5M tokens. ~26 min for 13B for 1 epoch.  ~151 min for 70b for 1 epoch.|
+| Minimum Compute Requirements | 6xg5.4xlarge for worker nodes for 7B model, 16xg5.4xlarge nodes for 13B model, and 32xg5.4xlarge (or 2xp4de.24xlarge) nodes for 70B|
 | Cluster Environment | This template uses a docker image built on top of the latest Anyscale-provided Ray image using Python 3.9: [`anyscale/ray:latest-py39-cu118`](https://docs.anyscale.com/reference/base-images/overview). |
 
 ## Getting Started
 
-For 7B, set up a cluster on AWS with the following settings:
+For 7B, set up a Ray Cluster with the following settings:
 
-|            | num | instance type | GPU per node | GPU Memory | CPU Memory |
-|------------|-----|---------------|--------------|------------|------------|
-| Head node  | 1   | m5.xlarge   | -     | -     | -     |
-| Worker node| 16  | g5.4xlarge    | 1 x A10G     | 24 GB      | 64 GB      |
+|  Node Type | Num | 
+|------------|-----|
+| Head node  | 1   |
+| Worker node| 6  | 
 
 And launch the following script:
 
@@ -81,13 +128,25 @@ The flag `--as-test` is for demo / testing purposes as it runs through only one 
 
 Similarly for 13B you need a different compute config. 
 
-|            | num | instance type | GPU per node | GPU Memory | CPU Memory |
-|------------|-----|---------------|--------------|------------|------------|
-| Head node  | 1   | m5.xlarge   | -     | -     | -     |
-| Worker node| 4  | g5.12xlarge    | 4 x A10G     | 24 GB      | 64 GB      |
+|  Node Type | Num | 
+|------------|-----|
+| Head node  | 1   |
+| Worker node| 16  | 
 
 ```
 ./run_llama_ft.sh --size=13b [--as-test]
+```
+
+Similarly, for 70B you need a different compute config. 
+
+|  Node Type | Num | 
+|------------|-----|
+| Head node  | 1   |
+| Worker node| 32  | 
+
+
+```
+./run_llama_ft.sh --size=70b [--as-test]
 ```
 
 ## What is happening under the hood?
