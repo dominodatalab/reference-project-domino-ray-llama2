@@ -1,3 +1,5 @@
+These instructions correspond to the template to fine-tune Llama2 series at `doc/source/templates/04_finetuning_llms_with_deepspeed` in this repository. 
+
 # [Domino] Set up instructions 
 
 ## Environment Requirements
