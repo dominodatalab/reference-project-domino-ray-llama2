@@ -1,4 +1,4 @@
-These instructions correspond to the template to fine-tune Llama2 series at `doc/source/templates/04_finetuning_llms_with_deepspeed` in this repository. 
+This is a fork of the official Ray project. The following instructions correspond to the template to fine-tune Llama2 series at `doc/source/templates/04_finetuning_llms_with_deepspeed` in this repository. Please look at `README.rst` for more details regarding the Ray project.
 
 # [Domino] Set up instructions 
 
